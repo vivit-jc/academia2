@@ -9,9 +9,9 @@
     <transition>
       <div class="alert alert-danger fade show center" id="alertmsg" role="alert" v-show="showAlert">{{alert_str}}</div>
     </transition>
-    <div class="center"  v-show="viewStatus==='howtoplay'">
+    <div class="center" v-show="viewStatus==='howtoplay'">
       <button type="button" @click="returnGame" class="btn btn-secondary btn-sm">ゲームに戻る</button><br>
-      <img src="info.jpg">
+      <img src="./assets/img/cauldron.png">
     </div>
     <div class="container main" v-show="viewStatus==='game'">
       <div class="row">
@@ -29,23 +29,9 @@
           </ul>
         </div>
         <div class="col-lg-10">
-          <div class="row space" v-show="gameStatus==='make_potion'">
-            <div class="col-3">
-              <img src="./assets/img/cauldron.png"><br>
-              <button type="button" class="rounded-pill btn-sm" v-show="cauldron.length==2" @click="make_potion">調合</button>
-              <p class="warn" v-show="search_notes">この組み合わせで調合したことがあります</p>
-            </div>
-            <div class="col-3">
-              <ul class="list-group">
-                <li class="list-group-item cauldron" v-for="(m, key) in cauldron" :key="key">
-                  <img :src="mat_img(m)" class="material">
-                  {{ele_j(m.ele)}}
-                  <button type="button" class="btn-close" aria-label="Close" @click="deleteCauldron(m)"></button>
-                </li>
-              </ul>
-            </div>
-            
-          </div>
+          <MakePotion class="row space" v-show="gameStatus==='make_potion'" v-bind:cauldron=cauldron>
+
+          </MakePotion>
           <div class="row space" v-show="gameStatus==='make_potion'">
             <div class="col-6" v-for="(m, key) in materials" :key="key" v-show="m.num>0" v-bind:class="[{hover:onMaterial===m.name},{}]" @mouseover="onMaterial=m.name" @mouseout="onMaterial=''">
               <img :src=mat_img(m) class="material">
@@ -73,13 +59,13 @@
 </template>
 
 <script>
-//import Game from './components/Game.vue'
+import MakePotion from './components/MakePotion.vue'
 import './assets/css/main.css';
 
 export default {
   name: 'App',
   components: {
-//    Game
+    MakePotion
   },
   data() {
     return {
@@ -149,6 +135,8 @@ export default {
       } else if(c === "ノート"){
         this.gameStatus = "notes"
         this.msg = ["見直すノートを選んでください"]
+      } else if(c === "薬棚・使い魔"){
+        this.gameStatus = "rack"
       }
 
     },
@@ -161,6 +149,7 @@ export default {
     },
     deleteCauldron(m){
       this.cauldron = this.cauldron.filter(e => e!=m)
+      console.log("deleteCauldron")
     },
     make_potion(){
       this.cauldron.forEach(e => {e.num -= 1})
