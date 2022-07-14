@@ -31,16 +31,8 @@
         <div class="col-lg-10">
           <MakePotion v-if="gameStatus==='make_potion'" :materials="materials" :notes="notes" v-on:make_potion="make_potion">
           </MakePotion>
-          <div class="row space" v-show="gameStatus==='notes'">
-            <p v-for="(m, key) in noteMsg" :key="key">{{m}}</p>
-          </div>
-          <div class="row space" v-show="gameStatus==='notes'">
-            <div class="col-6" v-for="(n, key) in notes" :key="key" :class="[{hover:onNote===n},{}]" @mouseover="onNote=n" @mouseout="onNote=''" @click="clickNote(n)">
-              実験：
-              <img :src="mat_img(get_m_from_name(n.materials[0]))" class="material">+
-              <img :src="mat_img(get_m_from_name(n.materials[1]))" class="material">
-            </div>
-          </div>
+          <ShowNotes v-if="gameStatus==='notes'" :notes="notes" :materials="materials">
+          </ShowNotes>
           <div class="row message space">
             <p v-for="(m, key) in msg" :key="key">{{m}}</p>
           </div>
@@ -51,13 +43,14 @@
 
 <script>
 import MakePotion from './components/MakePotion.vue'
-import {get_crystal_num, get_cauldron_mat_name, mat_img, search_notes} from './misc.js'
+import ShowNotes from './components/ShowNotes.vue'
+import {get_crystal_num, get_cauldron_mat_name, mat_img, search_notes, calc_potion, show_report} from './misc.js'
 import './assets/css/main.css';
 
 export default {
   name: 'App',
   components: {
-    MakePotion
+    MakePotion, ShowNotes
   },
   data() {
     return {
@@ -85,7 +78,6 @@ export default {
       ],
       rack: [],
       msg: [],
-      noteMsg: []
     }
   },
 
@@ -122,46 +114,18 @@ export default {
       }
 
     },
-    clickNote(note){
-      this.noteMsg = this.show_report(this.calc_potion(note.materials))
-    },
     make_potion(cauldron){
       cauldron.forEach(e => {e.num -= 1})
-      let potion = this.calc_potion([cauldron[0].name,cauldron[1].name])
-      this.msg = this.show_report(potion)
+      let potion = calc_potion(this.materials,[cauldron[0].name,cauldron[1].name])
+      this.msg = show_report(potion)
       this.msg.push(this.msg_get_potion(potion))
       if(!search_notes(this.notes, cauldron)) {
         this.add_note(cauldron);
         this.msg.push("結果をノートに書き残した")
       }
       this.add_rack(potion)
-      console.log(this.notes)
     },
-    calc_potion(mats){
-      let elements = [].concat(this.get_ele_from_name(mats[0]),this.get_ele_from_name(mats[1]))
-      let atoms = ["f","t","e","w","s","d"]
-      let pairs = [["f","t"],["e","w"],["s","d"]]
-      let result = elements.sort()
-      
-      // 対消滅
-      pairs.forEach(pair => {
-        if(elements.includes(pair[0]) && elements.includes(pair[1])){
-          result = result.filter(e => {
-            return (e != pair[0] && e != pair[1])
-          })
-        }
-      })
 
-      // 結晶化
-      atoms.forEach(a => {
-        if(result.filter(e => e==a).length == 2){
-          result = result.filter(e => e!=a)
-          result.push(a+a)
-        }
-      })
-
-      return result
-    },
     add_note(c){
       this.notes.push({
         materials: get_cauldron_mat_name(c)
@@ -179,22 +143,7 @@ export default {
         this.rack.unshift({materials: this.get_cauldron_mat_name, otype: type})
       }
     },
-    show_report(result){
-      let mal = result.join().replace(/,/g,"").length
-      let crystal = false
-      let same = false
-      let msg = []
-      if(result.length == 1 && this.get_crystal_num(result) == 1){
-        crystal = true;
-      } else if(result.filter(e => e.length == 2).length == 2){
-        same = true
-      }
-      msg = [result.join(),`魔力量: ${mal}mal`]
-      if(crystal) msg.push("結晶が析出した")
-      if(same) msg.push("反応は起きなかった")
 
-      return msg;
-    },
     msg_get_potion(result){
       let type = this.get_object_type(result)
 
@@ -207,9 +156,6 @@ export default {
       } else if(type == "reagent"){
         return "試薬を得た"
       }
-    },
-    get_ele_from_name(name){
-      return this.materials.filter(e => e.name === name)[0].ele
     },
     handleResize() {
       if (window.innerWidth <= 1000) {

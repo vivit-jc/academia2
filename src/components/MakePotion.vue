@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import {tests, get_cauldron_mat_name, mat_img, ele_j, search_notes} from '../misc.js'
+import {mat_img, ele_j, search_notes} from '../misc.js'
 
 export default {
   name: 'MakePotion',
