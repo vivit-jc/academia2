@@ -29,25 +29,16 @@
           </ul>
         </div>
         <div class="col-lg-10">
-          <MakePotion class="row space" v-show="gameStatus==='make_potion'" v-bind:cauldron=cauldron>
-
+          <MakePotion v-if="gameStatus==='make_potion'" :materials="materials" :notes="notes" v-on:make_potion="make_potion">
           </MakePotion>
-          <div class="row space" v-show="gameStatus==='make_potion'">
-            <div class="col-6" v-for="(m, key) in materials" :key="key" v-show="m.num>0" v-bind:class="[{hover:onMaterial===m.name},{}]" @mouseover="onMaterial=m.name" @mouseout="onMaterial=''">
-              <img :src=mat_img(m) class="material">
-              {{m.name}}({{ele_j(m.ele)}}) x{{m.num}}
-              <button type="button" class="rounded-pill btn-sm" v-bind:class="{'btn-secondary':!settable(m)}" @click="clickMaterialCommand(m)">入れる</button>
-              <button type="button" class="rounded-pill btn-sm">ノート</button>
-            </div>
-          </div>
           <div class="row space" v-show="gameStatus==='notes'">
             <p v-for="(m, key) in noteMsg" :key="key">{{m}}</p>
           </div>
           <div class="row space" v-show="gameStatus==='notes'">
-            <div class="col-6" v-for="(n, key) in notes" :key="key" v-bind:class="[{hover:onNote===n},{}]" @mouseover="onNote=n" @mouseout="onNote=''" @click="clickNote(n)">
+            <div class="col-6" v-for="(n, key) in notes" :key="key" :class="[{hover:onNote===n},{}]" @mouseover="onNote=n" @mouseout="onNote=''" @click="clickNote(n)">
               実験：
-              <img :src=mat_img(get_m_from_name(n.materials[0])) class="material">+
-              <img :src=mat_img(get_m_from_name(n.materials[1])) class="material">
+              <img :src="mat_img(get_m_from_name(n.materials[0]))" class="material">+
+              <img :src="mat_img(get_m_from_name(n.materials[1]))" class="material">
             </div>
           </div>
           <div class="row message space">
@@ -60,6 +51,7 @@
 
 <script>
 import MakePotion from './components/MakePotion.vue'
+import {get_crystal_num, get_cauldron_mat_name, mat_img, search_notes} from './misc.js'
 import './assets/css/main.css';
 
 export default {
@@ -98,17 +90,7 @@ export default {
   },
 
   computed: {
-    search_notes(){
-      return this.notes.filter(n => {
-        let c = this.get_cauldron_mat_name;
-        if(!c) return false;
-        return c.join() === n.materials.sort().join();
-      }).length > 0
-    },
-    get_cauldron_mat_name(){
-      if(this.cauldron.length != 2) return false;
-      return [this.cauldron[0].name, this.cauldron[1].name].sort();
-    }
+
   },
 
   watch: {
@@ -143,25 +125,17 @@ export default {
     clickNote(note){
       this.noteMsg = this.show_report(this.calc_potion(note.materials))
     },
-    clickMaterialCommand(m) {
-      if(!this.settable(m)){return false}
-      this.cauldron.push(m)
-    },
-    deleteCauldron(m){
-      this.cauldron = this.cauldron.filter(e => e!=m)
-      console.log("deleteCauldron")
-    },
-    make_potion(){
-      this.cauldron.forEach(e => {e.num -= 1})
-      let potion = this.calc_potion([this.cauldron[0].name,this.cauldron[1].name])
+    make_potion(cauldron){
+      cauldron.forEach(e => {e.num -= 1})
+      let potion = this.calc_potion([cauldron[0].name,cauldron[1].name])
       this.msg = this.show_report(potion)
       this.msg.push(this.msg_get_potion(potion))
-      if(!this.search_notes) {
-        this.add_note();
+      if(!search_notes(this.notes, cauldron)) {
+        this.add_note(cauldron);
         this.msg.push("結果をノートに書き残した")
       }
       this.add_rack(potion)
-      this.cauldron = []
+      console.log(this.notes)
     },
     calc_potion(mats){
       let elements = [].concat(this.get_ele_from_name(mats[0]),this.get_ele_from_name(mats[1]))
@@ -188,9 +162,9 @@ export default {
 
       return result
     },
-    add_note(){
+    add_note(c){
       this.notes.push({
-        materials: this.get_cauldron_mat_name
+        materials: get_cauldron_mat_name(c)
       })
     },
     add_rack(result){
@@ -234,11 +208,6 @@ export default {
         return "試薬を得た"
       }
     },
-    settable(m) {
-      if(this.cauldron.length === 1 && this.cauldron[0] === m){return false}
-      if(this.cauldron.length === 2){return false}
-      return true
-    },
     get_ele_from_name(name){
       return this.materials.filter(e => e.name === name)[0].ele
     },
@@ -253,7 +222,7 @@ export default {
 
     },
     get_object_type(result){
-      let crystal = this.get_crystal_num(result)
+      let crystal = get_crystal_num(result)
       if(crystal == 2){
         return "duplicate"
       } else if(crystal == 1 && result.length == 3){
@@ -264,17 +233,11 @@ export default {
         return "reagent"
       }
     },
-    get_crystal_num(result){
-      return result.filter(e=> e.length==2).length
-    },
-    ele_j(e) {
-      return e[0]+"-"+e[1]
-    },
-    mat_img(m) {
-      return require("./assets/img/"+m.src+".png")
-    },
     get_m_from_name(name){
       return this.materials.filter(m => m.name === name)[0]
+    },
+    mat_img(m){
+      return mat_img(m)
     }
   }
 }
