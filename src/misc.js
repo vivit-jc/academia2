@@ -6,33 +6,59 @@ export function ele_j(e) {
   return e[0]+"-"+e[1]
 }
 
-export function mat_img(m) {
-  return require("./assets/img/"+m.src+".png")
+export function obj_img(obj) {
+  let t = obj.otype
+  if(t === "duplicate"){t = "reagent"}
+  else if(obj==="reagent"){t = obj}
+  else if(obj.src){t = obj.src}
+  else if(!t){t = "white"}
+  return require("./assets/img/"+t+".png")
 }
 
-export function get_cauldron_mat_name(c){
+export function obj_j(obj) {
+  let t = obj.otype
+  if(t === "duplicate" || t === "reagent"){return "試薬"}
+  else if(obj === "reagent"){return "試薬"}
+  else if(t === "potion"){return "ポーション"}
+  else if(t === "crystal"){return "結晶"}
+  else if(!t){return obj.name} // 素材の場合
+  else{return false}
+}
+
+export function get_cauldron_mat(c){
   if(c.length != 2) return false;
-  return [c[0].name, c[1].name].sort();
+  let r = []
+  c.forEach(e=>{
+    if(e.otype === "reagent") r.push(e.materials)
+    else r.push(e.name)
+  })
+  return r.sort();
 }
 
 export function search_notes(notes, cauldron){
-  return notes.filter(n => {
-    let c = get_cauldron_mat_name(cauldron);
+  return notes.find(n => {
+    let c = get_cauldron_mat(cauldron);
     if(!c) return false;
     return c.join() === n.materials.sort().join();
-  }).length > 0
+  })
 }
 
 export function get_m_from_name(materials, name){
-  return materials.filter(m => m.name === name)[0]
+  if(Array.isArray(name)){
+    return "reagent"
+  } else {
+    return materials.find(m => m.name === name)
+  }
 }
 
 export function get_ele_from_name(materials, name){
-  return materials.filter(e => e.name === name)[0].ele
+  return materials.find(e => e.name === name).ele
 }
 
-export function calc_potion(materials, cauldron){
-  let elements = [].concat(get_ele_from_name(materials, cauldron[0]),get_ele_from_name(materials, cauldron[1]))
+export function calc_potion(cauldron){
+  // in [result, result]
+  // out result
+  let elements = [].concat(cauldron[0],cauldron[1])
   let atoms = ["f","t","e","w","s","d"]
   let pairs = [["f","t"],["e","w"],["s","d"]]
   let result = elements.sort()
@@ -54,6 +80,7 @@ export function calc_potion(materials, cauldron){
     }
   })
 
+  //console.log("calc",cauldron,result)
   return result
 }
 
@@ -73,3 +100,25 @@ export function show_report(result){
 
   return msg;
 }
+
+export function get_object_type(result){
+  let crystal = get_crystal_num(result)
+  if(crystal == 2){
+    return "duplicate"
+  } else if(crystal == 1 && result.length == 3){
+    return "potion"
+  } else if(crystal == 1){
+    return "crystal"
+  } else if(result.length == 2){
+    return "reagent"
+  } else {
+    return false
+  }
+}
+
+export function get_reagent_number(notes, mat){
+  if(!Array.isArray(mat)){return false}
+  return notes.find(n => JSON.stringify(n.materials) == JSON.stringify(mat)).number
+}
+
+

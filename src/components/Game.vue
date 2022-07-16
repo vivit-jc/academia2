@@ -1,5 +1,5 @@
 <template>
-<button>
+ああああ
 </template>
 
 <script>

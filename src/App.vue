@@ -29,10 +29,13 @@
           </ul>
         </div>
         <div class="col-lg-10">
-          <MakePotion v-if="gameStatus==='make_potion'" :materials="materials" :notes="notes" v-on:make_potion="make_potion">
-          </MakePotion>
+          <MakePotionView v-if="gameStatus==='make_potion'" :materials="materials" :notes="notes" :reagents="get_reagents" :rack="rack" @make-potion="makePotion">
+          </MakePotionView>
           <ShowNotes v-if="gameStatus==='notes'" :notes="notes" :materials="materials">
           </ShowNotes>
+          <ShowRack v-if="gameStatus==='rack'" :rack="rack" :notes="notes" :materials="materials">
+          </ShowRack>
+          
           <div class="row message space">
             <p v-for="(m, key) in msg" :key="key">{{m}}</p>
           </div>
@@ -42,15 +45,17 @@
 </template>
 
 <script>
-import MakePotion from './components/MakePotion.vue'
+import MakePotionView from './components/MakePotionView.vue'
 import ShowNotes from './components/ShowNotes.vue'
-import {get_crystal_num, get_cauldron_mat_name, mat_img, search_notes, calc_potion, show_report} from './misc.js'
+import ShowRack from './components/ShowRack.vue'
+
+import {get_cauldron_mat, search_notes, calc_potion, get_object_type, get_reagent_number} from './misc.js'
 import './assets/css/main.css';
 
 export default {
   name: 'App',
   components: {
-    MakePotion, ShowNotes
+    MakePotionView, ShowNotes, ShowRack
   },
   data() {
     return {
@@ -59,6 +64,7 @@ export default {
       onMaterial: "",
       onCommand: "",
       onNote: "",
+      subjectNumber: 0,
       commands: ["調合","外出","ノート","論文","素材","薬棚・使い魔","ヘルプ"],
       cauldron: [],
       materials: [
@@ -68,13 +74,13 @@ export default {
         {name: "枝",src: "branches", known: "?", num: 4, ele: ["e","f"]},
         {name: "葉っぱ",src: "leaves", known: "?", num: 4, ele: ["e","s"]},
         {name: "ミミズ",src: "worm", known: "?", num: 5, ele: ["e","d"]},
-        {name: "ベリー",src: "berries", known: "?", num: 5, ele: ["e","d"]}
+        {name: "ベリー",src: "berries", known: "?", num: 5, ele: ["e","d"]},
+        {name: "トカゲ",src: "lizard", known: "?", num: 5, ele: ["f","d"]},
+        {name: "羽根",src: "feather", known: "?", num: 5, ele: ["w","f"]}
+        
       ],
       notes: [
-        {materials:["キノコ","カエル"]},
-        {materials:["キノコ","枝"]},
-        {materials:["キノコ","ミミズ"]},
-        {materials:["ベリー","カエル"]}
+
       ],
       rack: [],
       msg: [],
@@ -82,7 +88,9 @@ export default {
   },
 
   computed: {
-
+    get_reagents(){
+      return this.rack.filter(e=>e.otype==="reagent")
+    }
   },
 
   watch: {
@@ -114,38 +122,52 @@ export default {
       }
 
     },
-    make_potion(cauldron){
-      cauldron.forEach(e => {e.num -= 1})
-      let potion = calc_potion(this.materials,[cauldron[0].name,cauldron[1].name])
-      this.msg = show_report(potion)
-      this.msg.push(this.msg_get_potion(potion))
+    makePotion(cauldron){
+      let elements = []
+      cauldron.forEach(e => {
+        if(!e.otype){
+          e.num -= 1
+        }
+        elements.push(e.ele)
+      })
+
+      let potion = calc_potion(elements)
+      this.msg = [this.msg_get_potion(potion)]
       if(!search_notes(this.notes, cauldron)) {
-        this.add_note(cauldron);
+        this.add_note(cauldron, potion);
         this.msg.push("結果をノートに書き残した")
       }
-      this.add_rack(potion)
+      this.add_rack(cauldron, potion)
     },
 
-    add_note(c){
+    add_note(c,result){
+      this.subjectNumber += 1
       this.notes.push({
-        materials: get_cauldron_mat_name(c)
+        materials: get_cauldron_mat(c), ele: result, otype: get_object_type(result), number: this.subjectNumber
       })
     },
-    add_rack(result){
-      let type = this.get_object_type(result)
-      if(result.length == 0){
-        return false;
-      } else if(type == "duplicate"){
-        // 2個分増やす
-        this.rack.unshift({materials: this.get_cauldron_mat_name, otype: "reagent"})
-        this.rack.unshift({materials: this.get_cauldron_mat_name, otype: "reagent"})
-      } else {
-        this.rack.unshift({materials: this.get_cauldron_mat_name, otype: type})
+
+    add_rack(cauldron, result){
+      if(result.length == 0) return false;
+
+      let type = get_object_type(result)
+      let obj = {
+        materials: get_cauldron_mat(cauldron), 
+        otype: type, 
+        ele: result, 
+        number: get_reagent_number(this.notes, get_cauldron_mat(cauldron))
       }
+
+      if(type == "duplicate"){
+        obj.otype = "reagent"
+        obj.ele = [obj.ele[0][0], obj.ele[1][0]] // ["ee","dd"]などの状態から["e","d"]に書き換える
+        this.rack.unshift(JSON.parse(JSON.stringify(obj)))
+      } 
+      this.rack.unshift(obj)
     },
 
     msg_get_potion(result){
-      let type = this.get_object_type(result)
+      let type = get_object_type(result)
 
       if(type == "duplicate"){
         return "試薬を2つ分得た"
@@ -167,24 +189,6 @@ export default {
     initGame() {
 
     },
-    get_object_type(result){
-      let crystal = get_crystal_num(result)
-      if(crystal == 2){
-        return "duplicate"
-      } else if(crystal == 1 && result.length == 3){
-        return "potion"
-      } else if(crystal == 1){
-        return "crystal"
-      } else if(result.length == 2){
-        return "reagent"
-      }
-    },
-    get_m_from_name(name){
-      return this.materials.filter(m => m.name === name)[0]
-    },
-    mat_img(m){
-      return mat_img(m)
-    }
   }
 }
 </script>

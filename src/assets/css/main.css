@@ -56,8 +56,13 @@ button {
   margin: 3px !important;
 }
 
-h1: {
+h1 {
   text-align: center;
+}
+
+h2 {
+  text-align: center;
+  background-color: #e0e0e0;
 }
 
 #commands {
@@ -147,4 +152,24 @@ h1: {
 
 .badge-wide {
   width: 300px !important;
+}
+
+.tab{
+  margin-bottom: 4px;
+}
+
+.tab_all{
+  background-color: #cc7eb1;
+}
+
+.tab_reagent{
+  background-color: #bce2e8;
+}
+
+.tab_potion{
+  background-color: #b8d200;
+}
+
+.tab_crystal{
+  background-color: #cc7eb1;
 }
