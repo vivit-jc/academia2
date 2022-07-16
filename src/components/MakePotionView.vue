@@ -1,12 +1,12 @@
 <template>
   <div class="row space">
     <h2>調合</h2>
-    <div class="col-3">
+    <div class="col-4">
       <img src="../assets/img/cauldron.png">
       <button type="button" v-show="cauldron.length==2" @click="makePotion">調合</button>
       <p class="warn" v-show="search_notes">この組み合わせで調合したことがあります</p>
     </div>
-    <div class="col-3">
+    <div class="col-5">
       <ul class="list-group">
         <li class="list-group-item cauldron" v-for="(m, key) in cauldron" :key="key">
           <span v-if="m.otype==='reagent'">
@@ -29,7 +29,7 @@
     </div>
     <div class="row" v-if="table==='materials'">
       <div class="col-6" v-for="(m, key) in materials" :key="key" v-show="m.num>0" :class="[{hover:onMaterial===m.name},{}]" @mouseover="onMaterial=m.name" @mouseout="onMaterial=''">
-        <img :src=obj_img(m) class="material">
+        <ObjectImage :material="m"></ObjectImage>
         {{m.name}}({{ele_j(m.ele)}}) x{{m.num}}
         <button type="button" :class="{'btn-secondary':!settable(m)}" @click="clickMaterialCommand(m)">入れる</button>
         <button type="button">ノート</button>
@@ -50,11 +50,14 @@
 import {obj_img, ele_j, search_notes} from '../misc.js'
 import ReactionProduct from './ReactionProduct.vue'
 import NoteView from './NoteView.vue'
+import ObjectImage from './ObjectImage.vue'
+
 
 export default {
   name: 'MakePotionView',
   props: ['notes', 'materials', 'reagents', 'rack'],
-  components: {ReactionProduct, NoteView},
+  emits: ['make-potion'],
+  components: {ReactionProduct, NoteView, ObjectImage},
   data() {
     return {
       onMaterial: "",

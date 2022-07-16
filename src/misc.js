@@ -45,6 +45,7 @@ export function search_notes(notes, cauldron){
 
 export function get_m_from_name(materials, name){
   if(Array.isArray(name)){
+    console.log("gm",JSON.stringify(name))
     return "reagent"
   } else {
     return materials.find(m => m.name === name)

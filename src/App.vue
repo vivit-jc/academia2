@@ -69,20 +69,19 @@ export default {
       cauldron: [],
       materials: [
         //f,t,e,w,s,d
-        {name: "キノコ",src: "mushroom", known: "?", num: 4, ele: ["t","w"]},
-        {name: "カエル",src: "frog", known: "?", num: 4, ele: ["f","d"]},
-        {name: "枝",src: "branches", known: "?", num: 4, ele: ["e","f"]},
-        {name: "葉っぱ",src: "leaves", known: "?", num: 4, ele: ["e","s"]},
-        {name: "ミミズ",src: "worm", known: "?", num: 5, ele: ["e","d"]},
-        {name: "ベリー",src: "berries", known: "?", num: 5, ele: ["e","d"]},
-        {name: "トカゲ",src: "lizard", known: "?", num: 5, ele: ["f","d"]},
-        {name: "羽根",src: "feather", known: "?", num: 5, ele: ["w","f"]}
+        {name: "キノコ",src: "mushroom", known: true, num: 4, ele: ["t","w"]},
+        {name: "カエル",src: "frog", known: true, num: 4, ele: ["f","d"]},
+        {name: "枝",src: "branches", known: true, num: 4, ele: ["f","e"]},
+        {name: "葉っぱ",src: "leaves", known: true, num: 4, ele: ["e","s"]},
+        {name: "ミミズ",src: "worm", known: false, num: 5, ele: ["e","d"]},
+        {name: "ベリー",src: "berries", known: true, num: 5, ele: ["e","d"]},
+        {name: "トカゲ",src: "lizard", known: true, num: 5, ele: ["f","d"]},
+        {name: "羽根",src: "feather", known: true, num: 5, ele: ["w","f"]}
         
       ],
-      notes: [
-
-      ],
+      notes: [],
       rack: [],
+      papers: [],
       msg: [],
     }
   },

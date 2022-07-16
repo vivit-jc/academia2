@@ -30,6 +30,7 @@ import {get_m_from_name, ele_j, obj_img, obj_j, get_reagent_number, show_report}
 export default {
   name: 'NoteView',
   props: ['notes', 'materials', 'showing'],
+  emit: ['openNote'],
   components: {},
   data() {
     return {
