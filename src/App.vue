@@ -21,17 +21,18 @@
           <button type="button" @click="showBeta" v-show="beta" class="btn btn-secondary btn-sm">β変更点</button>
           <button type="button" @click="showUpdates" v-show="!beta" class="btn btn-secondary btn-sm">変更履歴</button>
           <ul class="list-group">
-            <li class="list-group-item command" v-for="(command, key) in commands" :key="key" v-bind:class="[{hover:onCommand===command},{}]" @mouseover="onCommand=command" @mouseout="onCommand=''" @click="clickCommand(command)">
+            <li class="list-group-item command" v-for="(command, key) in commands" :key="key" v-bind:class="[{hover:onCommand===command},{}]" @mouseover="onCommand=command" @mouseout="onCommand=''" @click="click_command(command)">
               {{command}}
               <span class="badge rounded-pill bg-info text-dark" v-if="command==='ノート'">{{notes.length}}</span>
+              <span class="badge rounded-pill bg-info text-dark" v-if="command==='論文'">{{papers.length}}</span>
               <span class="badge rounded-pill bg-info text-dark" v-if="command==='薬棚・使い魔'">{{rack.length}}</span>
             </li>
           </ul>
         </div>
         <div class="col-lg-10">
-          <MakePotionView v-if="gameStatus==='make_potion'" :materials="materials" :notes="notes" :reagents="get_reagents" :rack="rack" @make-potion="makePotion">
+          <MakePotionView v-if="gameStatus==='make_potion'" :materials="materials" :notes="notes" :reagents="get_reagents" :rack="rack" @make_potion="make_potion" @write_paper="write_paper">
           </MakePotionView>
-          <ShowNotes v-if="gameStatus==='notes'" :notes="notes" :materials="materials">
+          <ShowNotes v-if="gameStatus==='notes'" :notes="notes" :materials="materials" @write_paper="write_paper">
           </ShowNotes>
           <ShowRack v-if="gameStatus==='rack'" :rack="rack" :notes="notes" :materials="materials">
           </ShowRack>
@@ -49,7 +50,7 @@ import MakePotionView from './components/MakePotionView.vue'
 import ShowNotes from './components/ShowNotes.vue'
 import ShowRack from './components/ShowRack.vue'
 
-import {get_cauldron_mat, search_notes, calc_potion, get_object_type, get_reagent_number} from './misc.js'
+import {get_cauldron_mat, search_notes, calc_potion, get_object_type, get_reagent_number, get_m_from_name, calc_candidate} from './misc.js'
 import './assets/css/main.css';
 
 export default {
@@ -70,13 +71,13 @@ export default {
       materials: [
         //f,t,e,w,s,d
         {name: "キノコ",src: "mushroom", known: true, num: 4, ele: ["t","w"]},
-        {name: "カエル",src: "frog", known: true, num: 4, ele: ["f","d"]},
-        {name: "枝",src: "branches", known: true, num: 4, ele: ["f","e"]},
-        {name: "葉っぱ",src: "leaves", known: true, num: 4, ele: ["e","s"]},
-        {name: "ミミズ",src: "worm", known: false, num: 5, ele: ["e","d"]},
-        {name: "ベリー",src: "berries", known: true, num: 5, ele: ["e","d"]},
-        {name: "トカゲ",src: "lizard", known: true, num: 5, ele: ["f","d"]},
-        {name: "羽根",src: "feather", known: true, num: 5, ele: ["w","f"]}
+        {name: "カエル",src: "frog", known: false, num: 4, ele: ["f","d"]},
+        {name: "枝",src: "branches", known: false, num: 4, ele: ["f","e"]},
+        {name: "葉っぱ",src: "leaves", known: false, num: 4, ele: ["e","s"]},
+        {name: "ミミズ",src: "worm", known: true, num: 5, ele: ["e","d"]},
+        {name: "ベリー",src: "berries", known: false, num: 5, ele: ["e","d"]},
+        {name: "トカゲ",src: "lizard", known: false, num: 5, ele: ["f","d"]},
+        {name: "羽根",src: "feather", known: false, num: 5, ele: ["f","w"]}
         
       ],
       notes: [],
@@ -107,7 +108,7 @@ export default {
   },
 
   methods: {
-    clickCommand(c){
+    click_command(c){
       this.cauldron = []
       this.msg = []
       if(c === "調合"){
@@ -121,7 +122,7 @@ export default {
       }
 
     },
-    makePotion(cauldron){
+    make_potion(cauldron){
       let elements = []
       cauldron.forEach(e => {
         if(!e.otype){
@@ -142,7 +143,7 @@ export default {
     add_note(c,result){
       this.subjectNumber += 1
       this.notes.push({
-        materials: get_cauldron_mat(c), ele: result, otype: get_object_type(result), number: this.subjectNumber
+        materials: get_cauldron_mat(c), ele: result, otype: get_object_type(result), number: this.subjectNumber, theme:"exp"
       })
     },
 
@@ -163,6 +164,34 @@ export default {
         this.rack.unshift(JSON.parse(JSON.stringify(obj)))
       } 
       this.rack.unshift(obj)
+    },
+
+    write_paper(note,type){
+      console.log(type)
+      if(note.materials.flat().length == 2){ // とりあえず素材２つから作った場合のみ
+        let materials = [get_m_from_name(this.materials, note.materials[0]),get_m_from_name(this.materials, note.materials[1])]
+        if(materials.filter(e=>e.known).length == 1){
+          if(note.otype === "duplicate" || note.otype === false){
+            let unknown = materials.find(m=>!m.known)
+            let p = {theme: "atom", name: unknown.name}
+            this.papers.push(p)
+            unknown.known = true
+          } else if(note.otype === "crystal"){
+            let unknown = materials.find(m=>!m.known)
+            let known = materials.find(m=>m.known)
+            this.subjectNumber += 1
+            let n = {
+              theme: "candidate", 
+              name: unknown.name, 
+              sub: known.name, 
+              ref: note.number, 
+              candidate: calc_candidate("crystal",known.ele), 
+              number: this.subjectNumber
+            }
+            this.notes.push(n)
+          }
+        }
+      }
     },
 
     msg_get_potion(result){

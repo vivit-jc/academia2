@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import {get_m_from_name, obj_img, obj_j, get_reagent_number} from '../misc.js'
+import {get_m_from_name, obj_img, obj_j, get_reagent_number, atom_str} from '../misc.js'
 
 export default {
   name: 'ObjectImage',
@@ -19,7 +19,6 @@ export default {
   },
   computed: {
     mat_know(){
-      console.log(JSON.stringify(this.material))
       if(this.material.known){return true}
       else if(this.material.otype === "reagent"){return true}
       else{return false}
@@ -35,13 +34,7 @@ export default {
       return obj_j(item)
     },
     atom_img(m){
-      let t
-      if(m === "f"){t = "fire"}
-      else if(m === "t"){t = "water"}
-      else if(m === "e"){t = "earth"}
-      else if(m === "w"){t = "wind"}
-      else if(m === "s"){t = "shine"}
-      else if(m === "d"){t = "dark"}
+      let t = atom_str(m)
       return require("../assets/img/"+t+".png")
     },
     get_m_from_name(name){

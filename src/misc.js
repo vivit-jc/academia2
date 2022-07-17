@@ -39,6 +39,7 @@ export function search_notes(notes, cauldron){
   return notes.find(n => {
     let c = get_cauldron_mat(cauldron);
     if(!c) return false;
+    if(n.theme != "exp") return false;
     return c.join() === n.materials.sort().join();
   })
 }
@@ -122,4 +123,26 @@ export function get_reagent_number(notes, mat){
   return notes.find(n => JSON.stringify(n.materials) == JSON.stringify(mat)).number
 }
 
+export function calc_candidate(type, element){
+  if(type === "crystal"){
+    return [[element[0],converse(element[1])],[converse(element[0]),element[1]]]
+  }
+}
 
+export function converse(element){
+  if(element === "f"){return "t"}
+  else if(element === "t"){return "f"}
+  else if(element === "e"){return "w"}
+  else if(element === "w"){return "e"}
+  else if(element === "d"){return "s"}
+  else if(element === "s"){return "d"}
+}
+
+export function atom_str(m){
+  if(m === "f"){return "fire"}
+  else if(m === "t"){return "water"}
+  else if(m === "e"){return "earth"}
+  else if(m === "w"){return "wind"}
+  else if(m === "s"){return "shine"}
+  else if(m === "d"){return "dark"}
+}
