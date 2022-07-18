@@ -36,7 +36,6 @@ export default {
   },
   methods: {
     open_paper(paper){
-      console.log(JSON.stringify(paper))
       this.showing = paper
     },
     write_paper(note,type){

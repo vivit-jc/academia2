@@ -10,13 +10,13 @@
         →
         <ObjectImage :material="n"></ObjectImage>
       </span>
-      <span v-else-if="n.theme==='crystal'">
+      <span v-else-if="n.candidate">
         考察 #{{n.number}}：
         <ObjectImage :material="get_m_from_name(n.name)"></ObjectImage>→
         <img v-for="atom in n.candidate[0]" :key="atom.id" :src="atom_img(atom)"> or 
         <img v-for="atom in n.candidate[1]" :key="atom.id" :src="atom_img(atom)">
       </span>
-      <span v-else-if="n.theme==='potion'">
+      <span v-else-if="n.contain">
         考察 #{{n.number}}：
         <ObjectImage :material="get_m_from_name(n.name)"></ObjectImage> contain
         <img :src="atom_img(n.contain[0])"> or 

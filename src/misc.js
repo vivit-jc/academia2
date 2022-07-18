@@ -46,7 +46,6 @@ export function search_notes(notes, cauldron){
 
 export function get_m_from_name(materials, name){
   if(Array.isArray(name)){
-    console.log("gm",JSON.stringify(name))
     return "reagent"
   } else {
     return materials.find(m => m.name === name)
@@ -82,7 +81,6 @@ export function calc_potion(cauldron){
     }
   })
 
-  //console.log("calc",cauldron,result)
   return result
 }
 
@@ -148,7 +146,6 @@ export function atom_str(m){
 }
 
 export function get_writable_paper(materials, notes, note){
-  console.log("get_writable_paper",JSON.stringify(note))
   let mat = note.materials
   let matarray = [get_m_from_name(materials, mat[0]),get_m_from_name(materials, mat[1])]
   let result = {}
@@ -162,11 +159,12 @@ export function get_writable_paper(materials, notes, note){
         result = {theme: "crystal", name: unknown, sub: known, ntype:"discussion", ref: note.number}
       } else if(note.otype === "potion"){
         result = {theme: "potion", name: unknown, sub: known, ntype:"discussion", ref: note.number}
+      } else if(note.otype === "reagent"){
+        result = {theme: "reagent", name: unknown, sub: known, ntype:"discussion", ref: note.number}
       } else {
         return false
       }
       if(!notes.find(n=>(n.name===unknown && n.sub===known && n.theme===result.theme))){
-        console.log(result)
         return result
       } // 重複チェック
     }

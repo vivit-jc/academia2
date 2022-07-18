@@ -52,7 +52,7 @@ import ShowNotes from './components/ShowNotes.vue'
 import ShowRack from './components/ShowRack.vue'
 import ShowPapers from './components/ShowPapers.vue'
 
-import {get_cauldron_mat, search_notes, calc_potion, get_object_type, get_reagent_number, get_m_from_name, calc_candidate, get_writable_paper} from './misc.js'
+import {get_cauldron_mat, search_notes, calc_potion, get_object_type, get_reagent_number, get_m_from_name, calc_candidate, get_writable_paper, converse} from './misc.js'
 import './assets/css/main.css';
 
 export default {
@@ -211,6 +211,17 @@ export default {
           sub: paper.sub, 
           ref: paper.ref, 
           contain: [this.get_m_from_name(paper.sub).ele[0],this.get_m_from_name(paper.sub).ele[1]],
+          number: this.subjectNumber
+        }
+        this.notes.push(n)
+      } else if(paper.theme === "reagent"){
+        this.subjectNumber += 1
+        let n = {
+          theme: "reagent", 
+          name: paper.name, 
+          sub: paper.sub, 
+          ref: paper.ref, 
+          contain: [converse(this.get_m_from_name(paper.sub).ele[0]),converse(this.get_m_from_name(paper.sub).ele[1])],
           number: this.subjectNumber
         }
         this.notes.push(n)
