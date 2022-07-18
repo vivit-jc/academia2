@@ -8,14 +8,21 @@
         +
         <ObjectImage :material="get_m_from_name(n.materials[1])"></ObjectImage>
         →
-        <img :src="obj_img(n)" class="material">
+        <ObjectImage :material="n"></ObjectImage>
       </span>
-      <span v-if="n.theme==='candidate'">
-        考察 #{{n.number}}:
+      <span v-else-if="n.theme==='crystal'">
+        考察 #{{n.number}}：
         <ObjectImage :material="get_m_from_name(n.name)"></ObjectImage>→
         <img v-for="atom in n.candidate[0]" :key="atom.id" :src="atom_img(atom)"> or 
         <img v-for="atom in n.candidate[1]" :key="atom.id" :src="atom_img(atom)">
       </span>
+      <span v-else-if="n.theme==='potion'">
+        考察 #{{n.number}}：
+        <ObjectImage :material="get_m_from_name(n.name)"></ObjectImage> contain
+        <img :src="atom_img(n.contain[0])"> or 
+        <img :src="atom_img(n.contain[1])">
+      </span>
+      
     </div>
   </div>
   <NoteView v-if="showing" :showing="showing" :notes="notes" :materials="materials" @open_note="open_note" @write_paper="write_paper"></NoteView>

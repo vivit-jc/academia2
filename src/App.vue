@@ -36,6 +36,7 @@
           </ShowNotes>
           <ShowRack v-if="gameStatus==='rack'" :rack="rack" :notes="notes" :materials="materials">
           </ShowRack>
+          <ShowPapers v-if="gameStatus==='papers'" :papers="papers" :materials="materials"></ShowPapers>
           
           <div class="row message space">
             <p v-for="(m, key) in msg" :key="key">{{m}}</p>
@@ -49,14 +50,15 @@
 import MakePotionView from './components/MakePotionView.vue'
 import ShowNotes from './components/ShowNotes.vue'
 import ShowRack from './components/ShowRack.vue'
+import ShowPapers from './components/ShowPapers.vue'
 
-import {get_cauldron_mat, search_notes, calc_potion, get_object_type, get_reagent_number, get_m_from_name, calc_candidate} from './misc.js'
+import {get_cauldron_mat, search_notes, calc_potion, get_object_type, get_reagent_number, get_m_from_name, calc_candidate, get_writable_paper} from './misc.js'
 import './assets/css/main.css';
 
 export default {
   name: 'App',
   components: {
-    MakePotionView, ShowNotes, ShowRack
+    MakePotionView, ShowNotes, ShowRack, ShowPapers
   },
   data() {
     return {
@@ -66,18 +68,21 @@ export default {
       onCommand: "",
       onNote: "",
       subjectNumber: 0,
+      paperNumber: 0,
       commands: ["調合","外出","ノート","論文","素材","薬棚・使い魔","ヘルプ"],
       cauldron: [],
       materials: [
         //f,t,e,w,s,d
-        {name: "キノコ",src: "mushroom", known: true, num: 4, ele: ["t","w"]},
-        {name: "カエル",src: "frog", known: false, num: 4, ele: ["f","d"]},
-        {name: "枝",src: "branches", known: false, num: 4, ele: ["f","e"]},
-        {name: "葉っぱ",src: "leaves", known: false, num: 4, ele: ["e","s"]},
-        {name: "ミミズ",src: "worm", known: true, num: 5, ele: ["e","d"]},
-        {name: "ベリー",src: "berries", known: false, num: 5, ele: ["e","d"]},
-        {name: "トカゲ",src: "lizard", known: false, num: 5, ele: ["f","d"]},
-        {name: "羽根",src: "feather", known: false, num: 5, ele: ["f","w"]}
+        {name: "キノコ",src: "mushroom", known: true, num: 20, ele: ["t","w"]},
+        {name: "カエル",src: "frog", known: false, num: 20, ele: ["f","d"]},
+        {name: "枝",src: "branches", known: false, num: 20, ele: ["f","e"]},
+        {name: "葉っぱ",src: "leaves", known: false, num: 20, ele: ["e","s"]},
+        {name: "ミミズ",src: "worm", known: true, num: 20, ele: ["e","d"]},
+        {name: "ベリー",src: "berries", known: false, num: 20, ele: ["e","d"]},
+        {name: "トカゲ",src: "lizard", known: false, num: 20, ele: ["f","d"]},
+        {name: "羽根",src: "feather", known: false, num: 20, ele: ["f","w"]},
+        {name: "巻き貝",src: "nautilus", known: false, num: 20, ele: ["t","s"]},
+        {name: "クモ",src: "spider", known: false, num: 20, ele: ["t","e"]}
         
       ],
       notes: [],
@@ -117,6 +122,8 @@ export default {
       } else if(c === "ノート"){
         this.gameStatus = "notes"
         this.msg = ["見直すノートを選んでください"]
+      } else if(c === "論文") {
+        this.gameStatus = "papers"
       } else if(c === "薬棚・使い魔"){
         this.gameStatus = "rack"
       }
@@ -142,9 +149,18 @@ export default {
 
     add_note(c,result){
       this.subjectNumber += 1
-      this.notes.push({
-        materials: get_cauldron_mat(c), ele: result, otype: get_object_type(result), number: this.subjectNumber, theme:"exp"
-      })
+      let note = {
+        materials: get_cauldron_mat(c), 
+        ele: result, 
+        otype: get_object_type(result), 
+        number: this.subjectNumber, 
+        theme:"exp"
+      }
+      if(this.get_m_from_name(note.materials[0]).known && this.get_m_from_name(note.materials[1]).known){
+        console.log("both known")
+        note.known = true
+      }
+      this.notes.push(note)
     },
 
     add_rack(cauldron, result){
@@ -166,34 +182,50 @@ export default {
       this.rack.unshift(obj)
     },
 
-    write_paper(note,type){
-      console.log(type)
-      if(note.materials.flat().length == 2){ // とりあえず素材２つから作った場合のみ
-        let materials = [get_m_from_name(this.materials, note.materials[0]),get_m_from_name(this.materials, note.materials[1])]
-        if(materials.filter(e=>e.known).length == 1){
-          if(note.otype === "duplicate" || note.otype === false){
-            let unknown = materials.find(m=>!m.known)
-            let p = {theme: "atom", name: unknown.name}
-            this.papers.push(p)
-            unknown.known = true
-          } else if(note.otype === "crystal"){
-            let unknown = materials.find(m=>!m.known)
-            let known = materials.find(m=>m.known)
-            this.subjectNumber += 1
-            let n = {
-              theme: "candidate", 
-              name: unknown.name, 
-              sub: known.name, 
-              ref: note.number, 
-              candidate: calc_candidate("crystal",known.ele), 
-              number: this.subjectNumber
-            }
-            this.notes.push(n)
-          }
+    write_paper(note){
+      let paper = get_writable_paper(this.materials, this.notes, note)
+      console.log(JSON.stringify(paper))
+      if(paper.theme === "atom"){
+        this.paperNumber += 1
+        let m = this.get_m_from_name(paper.name)
+        let p = {theme: "atom", name: m.name, number: this.paperNumber, submitted: false}
+        m.known = true
+        this.papers.push(p)
+        this.rewrite_known()
+      } else if(paper.theme === "crystal"){
+        this.subjectNumber += 1
+        let n = {
+          theme: "crystal", 
+          name: paper.name, 
+          sub: paper.sub, 
+          ref: paper.ref, 
+          candidate: calc_candidate("crystal",this.get_m_from_name(paper.sub).ele), 
+          number: this.subjectNumber
         }
+        this.notes.push(n)
+      } else if(paper.theme === "potion"){
+        this.subjectNumber += 1
+        let n = {
+          theme: "potion", 
+          name: paper.name, 
+          sub: paper.sub, 
+          ref: paper.ref, 
+          contain: [this.get_m_from_name(paper.sub).ele[0],this.get_m_from_name(paper.sub).ele[1]],
+          number: this.subjectNumber
+        }
+        this.notes.push(n)
       }
     },
-
+    rewrite_known(){
+      let array = [].concat(this.notes,this.rack)
+      array.forEach(item=>{
+        if(item.otype==="reagent" || item.otype==="duplicate"){
+          if(this.get_m_from_name(item.materials[0]).known && this.get_m_from_name(item.materials[1]).known){
+            item.known = true
+          }
+        }
+      })
+    },
     msg_get_potion(result){
       let type = get_object_type(result)
 
@@ -217,6 +249,9 @@ export default {
     initGame() {
 
     },
+    get_m_from_name(name){
+      return get_m_from_name(this.materials, name)
+    }
   }
 }
 </script>

@@ -77,6 +77,10 @@ h2 {
   height: 32px;
 }
 
+.crystal {
+  height: 20px;
+}
+
 .space {
   border: 2px solid;
   padding: 6px;
@@ -119,7 +123,14 @@ h2 {
 
 }
 
-.cauldron {
+.submitted {
+  position: absolute;
+  right: 0;
+  margin-top: 5px;
+  margin-right: 8px;
+}
+
+.cauldron, .papers {
   position: relative;
 }
 

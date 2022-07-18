@@ -139,10 +139,37 @@ export function converse(element){
 }
 
 export function atom_str(m){
-  if(m === "f"){return "fire"}
-  else if(m === "t"){return "water"}
-  else if(m === "e"){return "earth"}
-  else if(m === "w"){return "wind"}
-  else if(m === "s"){return "shine"}
-  else if(m === "d"){return "dark"}
+  if(m[0] === "f"){return "fire"}
+  else if(m[0] === "t"){return "water"}
+  else if(m[0] === "e"){return "earth"}
+  else if(m[0] === "w"){return "wind"}
+  else if(m[0] === "s"){return "shine"}
+  else if(m[0] === "d"){return "dark"}
+}
+
+export function get_writable_paper(materials, notes, note){
+  console.log("get_writable_paper",JSON.stringify(note))
+  let mat = note.materials
+  let matarray = [get_m_from_name(materials, mat[0]),get_m_from_name(materials, mat[1])]
+  let result = {}
+  if(mat.flat().length == 2){ // とりあえず素材２つから作った場合のみ
+    if(matarray.filter(e=>e.known).length == 1){
+      let unknown = matarray.find(m=>!m.known).name
+      let known = matarray.find(m=>m.known).name
+      if(note.otype === "duplicate" || note.otype === false){
+        result = {theme: "atom", name: unknown, ntype:"paper", ref: note.number} // 元素の論文
+      } else if(note.otype === "crystal"){
+        result = {theme: "crystal", name: unknown, sub: known, ntype:"discussion", ref: note.number}
+      } else if(note.otype === "potion"){
+        result = {theme: "potion", name: unknown, sub: known, ntype:"discussion", ref: note.number}
+      } else {
+        return false
+      }
+      if(!notes.find(n=>(n.name===unknown && n.sub===known && n.theme===result.theme))){
+        console.log(result)
+        return result
+      } // 重複チェック
+    }
+  }
+  return false
 }

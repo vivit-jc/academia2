@@ -1,16 +1,18 @@
 <template>
-    <img :src="obj_img(item)" class="material">
+    <ObjectImage :material="item"></ObjectImage>
       {{obj_j(item)}}#{{get_reagent_number(item)}}
       (<img :src="obj_img(get_m_from_name(item.materials[0]))" class="material">+
       <img :src="obj_img(get_m_from_name(item.materials[1]))" class="material">)
 </template>
 
 <script>
+import ObjectImage from "./ObjectImage.vue"
 import {get_m_from_name, obj_img, obj_j, get_reagent_number} from '../misc.js'
 
 export default {
   name: 'ReactionProduct',
   props: ['item', 'notes', 'materials'],
+  components: {ObjectImage},
   data() {
     return {
     }
