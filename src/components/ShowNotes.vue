@@ -2,14 +2,10 @@
   <div class="row space">
     <h2>ノート</h2>
     <div>
-      <button :class="[{btn-secondary:!toggleStatus}]" @click="toggle(1)">実験</button>
-      <button :class="[{btn-secondary:!toggleStatus}]" @click="toggle(2)">考察</button>
-      <button :class="[{btn-secondary:!toggleStatus}]" @click="toggle(3)">ポーション</button>
-      <button :class="[{btn-secondary:!toggleStatus}]" @click="toggle(4)">試薬</button>
-      <button :class="[{btn-secondary:!toggleStatus}]" @click="toggle(5)">結晶</button>
-      <button :class="[{btn-secondary:!toggleStatus}]" @click="toggle(6)">消失</button>
+      絞り込み：
+      <button v-for="(str,index) in toggleStr" :key="str" :class="{'btn-secondary':!toggleStatus[index]}" @click="toggle(index)">{{str}}</button>
     </div>
-    <div class="col-6" v-for="(n, key) in notes" :key="key" :class="[{hover:onNote===n},{}]" @mouseover="onNote=n" @mouseout="onNote=''" @click="open_note(n)">
+    <div class="col-6" v-for="(n, key) in narrow_notes" :key="key" :class="[{hover:onNote===n},{}]" @mouseover="onNote=n" @mouseout="onNote=''" @click="open_note(n)">
       <span v-if="n.theme==='exp'">
         実験 #{{n.number}}：
         <ObjectImage :material="get_m_from_name(n.materials[0])"></ObjectImage>
@@ -52,11 +48,22 @@ export default {
       onNote: "",
       showing: null,
       noteMsg: [],
+      toggleStr: ["実験","考察","ポーション","試薬","結晶","消失"],
       toggleStatus: [1,1,1,1,1,1]
     }
   },
   computed: {
-
+    narrow_notes(){
+      return this.notes.filter(n=>{
+        console.log(n.number, n.ntype)
+        return ((n.theme==="exp" && this.toggleStatus[0]) && (
+          (n.otype==="potion" && this.toggleStatus[2]) || 
+          (n.otype==="reagent" && this.toggleStatus[3]) || 
+          (n.otype==="crystal" && this.toggleStatus[4]) || 
+          (n.otype===false && this.toggleStatus[5]))) ||
+          (n.ntype==="discussion" && this.toggleStatus[1])
+      })
+    }
   },
   mounted() {
 
@@ -69,7 +76,7 @@ export default {
       this.$emit("write_paper",note,type)
     },
     toggle(type){
-      this.toggleStatus[type-1] = 1 - this.toggleStatus[type-1]
+      this.toggleStatus[type] = 1 - this.toggleStatus[type]
     },
     obj_img(i){
       return obj_img(i)

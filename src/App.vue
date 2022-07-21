@@ -196,6 +196,7 @@ export default {
         this.subjectNumber += 1
         let n = {
           theme: "crystal", 
+          ntype: "discussion", 
           name: paper.name, 
           sub: paper.sub, 
           ref: paper.ref, 
@@ -207,6 +208,7 @@ export default {
         this.subjectNumber += 1
         let n = {
           theme: "potion", 
+          ntype: "discussion", 
           name: paper.name, 
           sub: paper.sub, 
           ref: paper.ref, 
@@ -218,6 +220,7 @@ export default {
         this.subjectNumber += 1
         let n = {
           theme: "reagent", 
+          ntype: "discussion", 
           name: paper.name, 
           sub: paper.sub, 
           ref: paper.ref, 
