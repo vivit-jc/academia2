@@ -1,6 +1,14 @@
 <template>
   <div class="row space">
     <h2>ノート</h2>
+    <div>
+      <button :class="[{btn-secondary:!toggleStatus}]" @click="toggle(1)">実験</button>
+      <button :class="[{btn-secondary:!toggleStatus}]" @click="toggle(2)">考察</button>
+      <button :class="[{btn-secondary:!toggleStatus}]" @click="toggle(3)">ポーション</button>
+      <button :class="[{btn-secondary:!toggleStatus}]" @click="toggle(4)">試薬</button>
+      <button :class="[{btn-secondary:!toggleStatus}]" @click="toggle(5)">結晶</button>
+      <button :class="[{btn-secondary:!toggleStatus}]" @click="toggle(6)">消失</button>
+    </div>
     <div class="col-6" v-for="(n, key) in notes" :key="key" :class="[{hover:onNote===n},{}]" @mouseover="onNote=n" @mouseout="onNote=''" @click="open_note(n)">
       <span v-if="n.theme==='exp'">
         実験 #{{n.number}}：
@@ -43,7 +51,8 @@ export default {
     return {
       onNote: "",
       showing: null,
-      noteMsg: []
+      noteMsg: [],
+      toggleStatus: [1,1,1,1,1,1]
     }
   },
   computed: {
@@ -55,10 +64,12 @@ export default {
   methods: {
     open_note(note){
       this.showing = note
-      console.log(JSON.stringify(note))
     },
     write_paper(note,type){
       this.$emit("write_paper",note,type)
+    },
+    toggle(type){
+      this.toggleStatus[type-1] = 1 - this.toggleStatus[type-1]
     },
     obj_img(i){
       return obj_img(i)
