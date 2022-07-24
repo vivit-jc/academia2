@@ -81,6 +81,10 @@ h2 {
   height: 20px;
 }
 
+.atom {
+  height: 16px;
+}
+
 .space {
   border: 2px solid;
   padding: 6px;

@@ -31,13 +31,16 @@
     <p>
       実験 #{{note.ref}}の結果より、
       <ObjectImage :material="get_m_from_name(note.name)"></ObjectImage>は
-      <span v-if="note.candidate">
-      <img v-for="atom in note.candidate[0]" :key="atom.id" :src="atom_img(atom)"> か
-      <img v-for="atom in note.candidate[1]" :key="atom.id" :src="atom_img(atom)"> であると思われる。
+      <span v-if="note.candidate2">
+      <img v-for="atom in note.candidate2[0]" :key="atom.id" :src="atom_img(atom)" class="atom"> か
+      <img v-for="atom in note.candidate2[1]" :key="atom.id" :src="atom_img(atom)" class="atom"> であると思われる。
       </span>
-      <span v-if="note.contain">
-        <img :src="atom_img(note.contain[0])"> か
-        <img :src="atom_img(note.contain[1])"> を含むと思われる。
+      <span v-if="note.candidate4">
+        <span v-for="(c4, index) in calc_candidate4(note)" :key="c4">
+          <img :src="atom_img(c4[0])" class="atom">
+          <img :src="atom_img(c4[1])" class="atom">{{candidate4_str(index)}}
+        </span>
+        であると思われる。
       </span>
     </p>
     <div>
@@ -95,6 +98,10 @@ export default {
     write_paper(){
       this.$emit("write_paper",this.note)
     },
+    calc_candidate4(note){
+      let mat = note.candidate4
+      return [[mat[0],mat[2]],[mat[0],mat[3]],[mat[1],mat[2]],[mat[1],mat[3]]]
+    },
     obj_img(i){
       return obj_img(i)
     },
@@ -116,6 +123,13 @@ export default {
       let t = atom_str(m)
       return require("../assets/img/"+t+".png")
     },
+    candidate4_str(index){
+      if(index === 3){
+        return ""
+      } else {
+        return " か "
+      }
+    }
   }
 }
 </script>

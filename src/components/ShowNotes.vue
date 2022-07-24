@@ -10,17 +10,20 @@
         →
         <ObjectImage :material="n"></ObjectImage>
       </span>
-      <span v-else-if="n.candidate">
+      <span v-else-if="n.candidate2">
         考察 #{{n.number}}：
-        <ObjectImage :material="get_m_from_name(n.name)"></ObjectImage>→
-        <img v-for="atom in n.candidate[0]" :key="atom.id" :src="atom_img(atom)"> or 
-        <img v-for="atom in n.candidate[1]" :key="atom.id" :src="atom_img(atom)">
+        <ObjectImage :material="get_m_from_name(n.name)"></ObjectImage>=
+        <img v-for="atom in n.candidate2[0]" :key="atom.id" :src="atom_img(atom)" class="atom"> or 
+        <img v-for="atom in n.candidate2[1]" :key="atom.id" :src="atom_img(atom)" class="atom">
       </span>
-      <span v-else-if="n.contain">
+      <span v-else-if="n.candidate4">
         考察 #{{n.number}}：
-        <ObjectImage :material="get_m_from_name(n.name)"></ObjectImage> contain
-        <img :src="atom_img(n.contain[0])"> or 
-        <img :src="atom_img(n.contain[1])">
+        <ObjectImage :material="get_m_from_name(n.name)"></ObjectImage>=
+        (<img :src="atom_img(n.candidate4[0])" class="atom"> or 
+        <img :src="atom_img(n.candidate4[1])" class="atom">) - 
+        (<img :src="atom_img(n.candidate4[2])" class="atom"> or 
+        <img :src="atom_img(n.candidate4[3])" class="atom">) 
+
       </span>
       
     </div>

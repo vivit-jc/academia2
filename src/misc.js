@@ -122,8 +122,15 @@ export function get_reagent_number(notes, mat){
 }
 
 export function calc_candidate(type, element){
+  let mats = ["f","t","e","w","s","d"]
   if(type === "crystal"){
     return [[element[0],converse(element[1])],[converse(element[0]),element[1]]]
+  } else if(type === "potion"){
+    let ele_another = mats.filter(e=>!(element[0]===e || element[1]===e || converse(element[0])===e || converse(element[1])===e))
+    return [element[0],element[1],ele_another[0],ele_another[1]]
+  } else if(type === "reagent"){
+    let ele_another = mats.filter(e=>!(element[0]===e || element[1]===e || converse(element[0])===e || converse(element[1])===e))
+    return [converse(element[0]),converse(element[1]),ele_another[0],ele_another[1]]
   }
 }
 
@@ -145,6 +152,7 @@ export function atom_str(m){
   else if(m[0] === "d"){return "dark"}
 }
 
+// 論文・考察が書けるかどうかチェック 書けるならひな形を返す
 export function get_writable_paper(materials, notes, note){
   let mat = note.materials
   let matarray = [get_m_from_name(materials, mat[0]),get_m_from_name(materials, mat[1])]
