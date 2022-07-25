@@ -37,7 +37,7 @@
           <ShowRack v-if="gameStatus==='rack'" :rack="rack" :notes="notes" :materials="materials">
           </ShowRack>
           <ShowPapers v-if="gameStatus==='papers'" :papers="papers" :materials="materials"></ShowPapers>
-          
+          <ShowMaterials v-if="gameStatus==='materials'" :materials="materials"></ShowMaterials>
           <div class="row message space">
             <p v-for="(m, key) in msg" :key="key">{{m}}</p>
           </div>
@@ -51,6 +51,7 @@ import MakePotionView from './components/MakePotionView.vue'
 import ShowNotes from './components/ShowNotes.vue'
 import ShowRack from './components/ShowRack.vue'
 import ShowPapers from './components/ShowPapers.vue'
+import ShowMaterials from './components/ShowMaterials.vue'
 
 import {get_cauldron_mat, search_notes, calc_potion, get_object_type, get_reagent_number, get_m_from_name, calc_candidate, get_writable_paper} from './misc.js'
 import './assets/css/main.css';
@@ -58,7 +59,7 @@ import './assets/css/main.css';
 export default {
   name: 'App',
   components: {
-    MakePotionView, ShowNotes, ShowRack, ShowPapers
+    MakePotionView, ShowNotes, ShowRack, ShowPapers, ShowMaterials
   },
   data() {
     return {
@@ -69,20 +70,20 @@ export default {
       onNote: "",
       subjectNumber: 0,
       paperNumber: 0,
-      commands: ["調合","外出","ノート","論文","素材","薬棚・使い魔","ヘルプ"],
+      commands: ["調合","外出","ノート","論文","薬棚・使い魔","素材","ヘルプ"],
       cauldron: [],
       materials: [
         //f,t,e,w,s,d
-        {name: "キノコ",src: "mushroom", known: true, num: 20, ele: ["t","w"]},
-        {name: "カエル",src: "frog", known: false, num: 20, ele: ["f","d"]},
-        {name: "枝",src: "branches", known: false, num: 20, ele: ["f","e"]},
-        {name: "葉っぱ",src: "leaves", known: false, num: 20, ele: ["e","s"]},
-        {name: "ミミズ",src: "worm", known: true, num: 20, ele: ["e","d"]},
-        {name: "ベリー",src: "berries", known: false, num: 20, ele: ["e","d"]},
-        {name: "トカゲ",src: "lizard", known: false, num: 20, ele: ["f","d"]},
-        {name: "羽根",src: "feather", known: false, num: 20, ele: ["f","w"]},
-        {name: "巻き貝",src: "nautilus", known: false, num: 20, ele: ["t","s"]},
-        {name: "クモ",src: "spider", known: false, num: 20, ele: ["t","e"]}
+        {name: "キノコ",src: "mushroom", known: true, num: 20, ele: ["t","w"], place:"f"},
+        {name: "カエル",src: "frog", known: false, num: 20, ele: ["f","d"], place:"f"},
+        {name: "枝",src: "branches", known: false, num: 20, ele: ["f","e"], place:"m"},
+        {name: "葉っぱ",src: "leaves", known: false, num: 20, ele: ["e","s"], place:"f"},
+        {name: "ミミズ",src: "worm", known: true, num: 20, ele: ["e","d"], place:"f"},
+        {name: "ベリー",src: "berries", known: false, num: 20, ele: ["e","d"], place:"m"},
+        {name: "トカゲ",src: "lizard", known: false, num: 20, ele: ["f","d"], place:"c"},
+        {name: "羽根",src: "feather", known: false, num: 20, ele: ["f","w"], place:"m"},
+        {name: "巻き貝",src: "nautilus", known: false, num: 20, ele: ["t","s"], place:"l"},
+        {name: "クモ",src: "spider", known: false, num: 20, ele: ["t","e"], place:"f"}
         
       ],
       notes: [],
@@ -124,6 +125,8 @@ export default {
         this.msg = ["見直すノートを選んでください"]
       } else if(c === "論文") {
         this.gameStatus = "papers"
+      } else if(c === "素材"){
+        this.gameStatus = "materials"
       } else if(c === "薬棚・使い魔"){
         this.gameStatus = "rack"
       }
@@ -258,7 +261,9 @@ export default {
       }
     },
     initGame() {
-
+      this.materials.forEach(e=>{
+        e.num_past = 0
+      })
     },
     get_m_from_name(name){
       return get_m_from_name(this.materials, name)

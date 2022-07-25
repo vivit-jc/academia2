@@ -134,7 +134,7 @@ h2 {
   margin-right: 8px;
 }
 
-.cauldron, .papers {
+.cauldron, .papers, .relative {
   position: relative;
 }
 
@@ -142,9 +142,10 @@ h2 {
   font-size: small;
 }
 
-.btn-close {
+.btn-close, .right-side {
   position: absolute;
   right: 0;
+  top: 5px;
 }
 
 .v-leave-active {

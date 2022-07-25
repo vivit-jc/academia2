@@ -25,6 +25,14 @@ export function obj_j(obj) {
   else{return false}
 }
 
+export function place_j(p){
+  if(p === "m") return "山";
+  else if(p === "f") return "森";
+  else if(p === "c") return "洞窟";
+  else if(p === "l") return "湖";
+  else if(p === "o") return "その他";
+}
+
 export function get_cauldron_mat(c){
   if(c.length != 2) return false;
   let r = []
