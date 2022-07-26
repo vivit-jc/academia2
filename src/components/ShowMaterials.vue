@@ -10,7 +10,7 @@
       <button type="button" @click="click_place('o')">その他</button>
     </div>
     <div class="row">
-      <div class="col-3 relative" v-for="(m, key) in filtered" :key="key" v-show="m.num>0" :class="[{hover:onMaterial===m.name},{}]" @mouseover="onMaterial=m.name" @mouseout="onMaterial=''" @click="click_material(m)">
+      <div class="col-3 relative" v-for="(m, key) in filtered" :key="key" :class="[{hover:onMaterial===m.name},{}]" @mouseover="onMaterial=m.name" @mouseout="onMaterial=''" @click="showing=m">
         <ObjectImage :material="m"></ObjectImage>
         {{m.name}} x{{m.num}}
       </div>
@@ -65,9 +65,6 @@ export default {
       } else {
         this.filtered = this.materials.filter(m=>m.place===place)
       }
-    },
-    click_material(mat){
-      this.showing = mat
     },
     place_j(place){
       return place_j(place)

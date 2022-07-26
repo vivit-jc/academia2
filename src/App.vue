@@ -6,6 +6,12 @@
       <a href="https://twitter.com/vivit_jc">Twitter</a>&nbsp;
       <a href="https://github.com/vivit-jc/dicey_farm">GitHub</a>
     </div>
+    <div class="buttons">
+      <button type="button" @click="showHowToPlay" class="btn btn-secondary btn-sm">遊び方</button>
+      <button type="button" @click="showRules" class="btn btn-secondary btn-sm">ルール説明</button>
+      <button type="button" @click="showBeta" v-show="beta" class="btn btn-secondary btn-sm">β変更点</button>
+      <button type="button" @click="showUpdates" v-show="!beta" class="btn btn-secondary btn-sm">変更履歴</button>
+    </div>
     <transition>
       <div class="alert alert-danger fade show center" id="alertmsg" role="alert" v-show="showAlert">{{alert_str}}</div>
     </transition>
@@ -16,10 +22,10 @@
     <div class="container main" v-show="viewStatus==='game'">
       <div class="row">
         <div class="col-12 col-lg-2 space" id="commands">
-          <button type="button" @click="showHowToPlay" class="btn btn-secondary btn-sm">遊び方</button>
-          <button type="button" @click="showRules" class="btn btn-secondary btn-sm">ルール説明</button>
-          <button type="button" @click="showBeta" v-show="beta" class="btn btn-secondary btn-sm">β変更点</button>
-          <button type="button" @click="showUpdates" v-show="!beta" class="btn btn-secondary btn-sm">変更履歴</button>
+          <div>
+            花の月 １日
+            {{time}}時
+          </div>
           <ul class="list-group">
             <li class="list-group-item command" v-for="(command, key) in commands" :key="key" v-bind:class="[{hover:onCommand===command},{}]" @mouseover="onCommand=command" @mouseout="onCommand=''" @click="click_command(command)">
               {{command}}
@@ -32,6 +38,7 @@
         <div class="col-lg-10">
           <MakePotionView v-if="gameStatus==='make_potion'" :materials="materials" :notes="notes" :reagents="get_reagents" :rack="rack" @make_potion="make_potion" @write_paper="write_paper">
           </MakePotionView>
+          <ChangePlace v-if="gameStatus==='change_place'"></ChangePlace>
           <ShowNotes v-if="gameStatus==='notes'" :notes="notes" :materials="materials" @write_paper="write_paper">
           </ShowNotes>
           <ShowRack v-if="gameStatus==='rack'" :rack="rack" :notes="notes" :materials="materials">
@@ -52,6 +59,7 @@ import ShowNotes from './components/ShowNotes.vue'
 import ShowRack from './components/ShowRack.vue'
 import ShowPapers from './components/ShowPapers.vue'
 import ShowMaterials from './components/ShowMaterials.vue'
+import ChangePlace from './components/ChangePlace.vue'
 
 import {get_cauldron_mat, search_notes, calc_potion, get_object_type, get_reagent_number, get_m_from_name, calc_candidate, get_writable_paper} from './misc.js'
 import './assets/css/main.css';
@@ -59,7 +67,7 @@ import './assets/css/main.css';
 export default {
   name: 'App',
   components: {
-    MakePotionView, ShowNotes, ShowRack, ShowPapers, ShowMaterials
+    MakePotionView, ShowNotes, ShowRack, ShowPapers, ShowMaterials, ChangePlace
   },
   data() {
     return {
@@ -90,13 +98,14 @@ export default {
       rack: [],
       papers: [],
       msg: [],
+      time: 8,
     }
   },
 
   computed: {
     get_reagents(){
       return this.rack.filter(e=>e.otype==="reagent")
-    }
+    },
   },
 
   watch: {
@@ -120,6 +129,8 @@ export default {
       if(c === "調合"){
         this.gameStatus = "make_potion"
         this.msg = ["調合中・・・"]
+      } else if(c === "外出"){
+        this.gameStatus = "change_place"
       } else if(c === "ノート"){
         this.gameStatus = "notes"
         this.msg = ["見直すノートを選んでください"]
