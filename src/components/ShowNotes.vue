@@ -1,7 +1,7 @@
 <template>
   <div class="row space">
     <h2>ノート</h2>
-    <div>
+    <div v-if="!search_mat">
       絞り込み：
       <button v-for="(str,index) in toggleStr" :key="str" :class="{'btn-secondary':!toggleStatus[index]}" @click="toggle(index)">{{str}}</button>
     </div>
@@ -26,7 +26,6 @@
         <img :src="atom_img(n.contain[0])"> or 
         <img :src="atom_img(n.contain[1])">
       </span>
-      
     </div>
   </div>
   <NoteView v-if="showing" :showing="showing" :notes="notes" :materials="materials" @open_note="open_note" @write_paper="write_paper"></NoteView>
@@ -40,7 +39,7 @@ import {get_m_from_name, ele_j, obj_img, obj_j, get_reagent_number, atom_str} fr
 
 export default {
   name: 'ShowNotes',
-  props: ['notes', 'materials'],
+  props: ['notes', 'materials', 'search_mat'],
   emit: ['write_paper'],
   components: {NoteView, ObjectImage},
   data() {
@@ -54,15 +53,24 @@ export default {
   },
   computed: {
     narrow_notes(){
-      return this.notes.filter(n=>{
-        console.log(n.number, n.ntype)
-        return ((n.theme==="exp" && this.toggleStatus[0]) && (
-          (n.otype==="potion" && this.toggleStatus[2]) || 
-          (n.otype==="reagent" && this.toggleStatus[3]) || 
-          (n.otype==="crystal" && this.toggleStatus[4]) || 
-          (n.otype===false && this.toggleStatus[5]))) ||
-          (n.ntype==="discussion" && this.toggleStatus[1])
-      })
+      if(this.search_mat){
+        return this.notes.filter(n=>{
+          if(n.theme==="exp"){
+            return n.materials.find(m=>m===this.search_mat.name)
+          } else {
+            return n.name === this.search_mat.name
+          }
+        })
+      } else {
+        return this.notes.filter(n=>{
+          return ((n.theme==="exp" && this.toggleStatus[0]) && (
+            (n.otype==="potion" && this.toggleStatus[2]) || 
+            (n.otype==="reagent" && this.toggleStatus[3]) || 
+            (n.otype==="crystal" && this.toggleStatus[4]) || 
+            (n.otype===false && this.toggleStatus[5]))) ||
+            (n.ntype==="discussion" && this.toggleStatus[1])
+        })
+      }
     }
   },
   mounted() {

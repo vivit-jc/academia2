@@ -30,9 +30,9 @@
           </ul>
         </div>
         <div class="col-lg-10">
-          <MakePotionView v-if="gameStatus==='make_potion'" :materials="materials" :notes="notes" :reagents="get_reagents" :rack="rack" @make_potion="make_potion" @write_paper="write_paper">
+          <MakePotionView v-if="gameStatus==='make_potion'" :materials="materials" :notes="notes" :reagents="get_reagents" :rack="rack" @make_potion="make_potion" @write_paper="write_paper" @search_notes_by_mat="search_notes_by_mat">
           </MakePotionView>
-          <ShowNotes v-if="gameStatus==='notes'" :notes="notes" :materials="materials" @write_paper="write_paper">
+          <ShowNotes v-if="gameStatus==='notes'" :notes="notes" :materials="materials" :search_mat="search_mat" @write_paper="write_paper">
           </ShowNotes>
           <ShowRack v-if="gameStatus==='rack'" :rack="rack" :notes="notes" :materials="materials">
           </ShowRack>
@@ -67,6 +67,7 @@ export default {
       onMaterial: "",
       onCommand: "",
       onNote: "",
+      search_mat: "",
       subjectNumber: 0,
       paperNumber: 0,
       commands: ["調合","外出","ノート","論文","素材","薬棚・使い魔","ヘルプ"],
@@ -116,6 +117,7 @@ export default {
     click_command(c){
       this.cauldron = []
       this.msg = []
+      this.search_mat = ""
       if(c === "調合"){
         this.gameStatus = "make_potion"
         this.msg = ["調合中・・・"]
@@ -157,7 +159,6 @@ export default {
         theme:"exp"
       }
       if(this.get_m_from_name(note.materials[0]).known && this.get_m_from_name(note.materials[1]).known){
-        console.log("both known")
         note.known = true
       }
       this.notes.push(note)
@@ -239,6 +240,11 @@ export default {
           }
         }
       })
+    },
+    search_notes_by_mat(m){
+      console.log(m.name)
+      this.gameStatus = "notes"
+      this.search_mat = m
     },
     msg_get_potion(result){
       let type = get_object_type(result)

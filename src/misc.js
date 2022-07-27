@@ -145,6 +145,23 @@ export function atom_str(m){
   else if(m[0] === "d"){return "dark"}
 }
 
+export function get_atom_sets(){
+  return [
+    {s:"f-e",j:"火-土"},
+    {s:"f-w",j:"火-風"},
+    {s:"f-s",j:"火-光"},
+    {s:"f-d",j:"火-闇"},
+    {s:"t-e",j:"水-土"},
+    {s:"t-w",j:"水-風"},
+    {s:"t-s",j:"水-光"},
+    {s:"t-d",j:"水-闇"},
+    {s:"e-s",j:"土-光"},
+    {s:"e-d",j:"土-闇"},
+    {s:"w-s",j:"風-光"},
+    {s:"w-d",j:"風-闇"}
+  ]
+}
+
 export function get_writable_paper(materials, notes, note){
   let mat = note.materials
   let matarray = [get_m_from_name(materials, mat[0]),get_m_from_name(materials, mat[1])]
