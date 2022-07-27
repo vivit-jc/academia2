@@ -6,6 +6,12 @@
       <a href="https://twitter.com/vivit_jc">Twitter</a>&nbsp;
       <a href="https://github.com/vivit-jc/dicey_farm">GitHub</a>
     </div>
+    <div class="buttons">
+      <button type="button" @click="showHowToPlay" class="btn btn-secondary btn-sm">遊び方</button>
+      <button type="button" @click="showRules" class="btn btn-secondary btn-sm">ルール説明</button>
+      <button type="button" @click="showBeta" v-show="beta" class="btn btn-secondary btn-sm">β変更点</button>
+      <button type="button" @click="showUpdates" v-show="!beta" class="btn btn-secondary btn-sm">変更履歴</button>
+    </div>
     <transition>
       <div class="alert alert-danger fade show center" id="alertmsg" role="alert" v-show="showAlert">{{alert_str}}</div>
     </transition>
@@ -16,10 +22,10 @@
     <div class="container main" v-show="viewStatus==='game'">
       <div class="row">
         <div class="col-12 col-lg-2 space" id="commands">
-          <button type="button" @click="showHowToPlay" class="btn btn-secondary btn-sm">遊び方</button>
-          <button type="button" @click="showRules" class="btn btn-secondary btn-sm">ルール説明</button>
-          <button type="button" @click="showBeta" v-show="beta" class="btn btn-secondary btn-sm">β変更点</button>
-          <button type="button" @click="showUpdates" v-show="!beta" class="btn btn-secondary btn-sm">変更履歴</button>
+          <div>
+            花の月 １日
+            {{time}}時
+          </div>
           <ul class="list-group">
             <li class="list-group-item command" v-for="(command, key) in commands" :key="key" v-bind:class="[{hover:onCommand===command},{}]" @mouseover="onCommand=command" @mouseout="onCommand=''" @click="click_command(command)">
               {{command}}
@@ -32,12 +38,13 @@
         <div class="col-lg-10">
           <MakePotionView v-if="gameStatus==='make_potion'" :materials="materials" :notes="notes" :reagents="get_reagents" :rack="rack" @make_potion="make_potion" @write_paper="write_paper" @search_notes_by_mat="search_notes_by_mat">
           </MakePotionView>
+          <ChangePlace v-if="gameStatus==='change_place'"></ChangePlace>
           <ShowNotes v-if="gameStatus==='notes'" :notes="notes" :materials="materials" :search_mat="search_mat" @write_paper="write_paper">
           </ShowNotes>
           <ShowRack v-if="gameStatus==='rack'" :rack="rack" :notes="notes" :materials="materials">
           </ShowRack>
           <ShowPapers v-if="gameStatus==='papers'" :papers="papers" :materials="materials"></ShowPapers>
-          
+          <ShowMaterials v-if="gameStatus==='materials'" :materials="materials"></ShowMaterials>
           <div class="row message space">
             <p v-for="(m, key) in msg" :key="key">{{m}}</p>
           </div>
@@ -51,14 +58,16 @@ import MakePotionView from './components/MakePotionView.vue'
 import ShowNotes from './components/ShowNotes.vue'
 import ShowRack from './components/ShowRack.vue'
 import ShowPapers from './components/ShowPapers.vue'
+import ShowMaterials from './components/ShowMaterials.vue'
+import ChangePlace from './components/ChangePlace.vue'
 
-import {get_cauldron_mat, search_notes, calc_potion, get_object_type, get_reagent_number, get_m_from_name, calc_candidate, get_writable_paper, converse} from './misc.js'
+import {get_cauldron_mat, search_notes, calc_potion, get_object_type, get_reagent_number, get_m_from_name, calc_candidate, get_writable_paper} from './misc.js'
 import './assets/css/main.css';
 
 export default {
   name: 'App',
   components: {
-    MakePotionView, ShowNotes, ShowRack, ShowPapers
+    MakePotionView, ShowNotes, ShowRack, ShowPapers, ShowMaterials, ChangePlace
   },
   data() {
     return {
@@ -70,33 +79,34 @@ export default {
       search_mat: "",
       subjectNumber: 0,
       paperNumber: 0,
-      commands: ["調合","外出","ノート","論文","素材","薬棚・使い魔","ヘルプ"],
+      commands: ["調合","外出","ノート","論文","薬棚・使い魔","素材","ヘルプ"],
       cauldron: [],
       materials: [
         //f,t,e,w,s,d
-        {name: "キノコ",src: "mushroom", known: true, num: 20, ele: ["t","w"]},
-        {name: "カエル",src: "frog", known: false, num: 20, ele: ["f","d"]},
-        {name: "枝",src: "branches", known: false, num: 20, ele: ["f","e"]},
-        {name: "葉っぱ",src: "leaves", known: false, num: 20, ele: ["e","s"]},
-        {name: "ミミズ",src: "worm", known: true, num: 20, ele: ["e","d"]},
-        {name: "ベリー",src: "berries", known: false, num: 20, ele: ["e","d"]},
-        {name: "トカゲ",src: "lizard", known: false, num: 20, ele: ["f","d"]},
-        {name: "羽根",src: "feather", known: false, num: 20, ele: ["f","w"]},
-        {name: "巻き貝",src: "nautilus", known: false, num: 20, ele: ["t","s"]},
-        {name: "クモ",src: "spider", known: false, num: 20, ele: ["t","e"]}
+        {name: "キノコ",src: "mushroom", known: true, num: 20, ele: ["t","w"], place:"f"},
+        {name: "カエル",src: "frog", known: false, num: 20, ele: ["f","d"], place:"f"},
+        {name: "枝",src: "branches", known: false, num: 20, ele: ["f","e"], place:"m"},
+        {name: "葉っぱ",src: "leaves", known: false, num: 20, ele: ["e","s"], place:"f"},
+        {name: "ミミズ",src: "worm", known: true, num: 20, ele: ["e","d"], place:"f"},
+        {name: "ベリー",src: "berries", known: false, num: 20, ele: ["e","d"], place:"m"},
+        {name: "トカゲ",src: "lizard", known: false, num: 20, ele: ["f","d"], place:"c"},
+        {name: "羽根",src: "feather", known: false, num: 20, ele: ["f","w"], place:"m"},
+        {name: "巻き貝",src: "nautilus", known: false, num: 20, ele: ["t","s"], place:"l"},
+        {name: "クモ",src: "spider", known: false, num: 20, ele: ["t","e"], place:"f"}
         
       ],
       notes: [],
       rack: [],
       papers: [],
       msg: [],
+      time: 8,
     }
   },
 
   computed: {
     get_reagents(){
       return this.rack.filter(e=>e.otype==="reagent")
-    }
+    },
   },
 
   watch: {
@@ -121,11 +131,15 @@ export default {
       if(c === "調合"){
         this.gameStatus = "make_potion"
         this.msg = ["調合中・・・"]
+      } else if(c === "外出"){
+        this.gameStatus = "change_place"
       } else if(c === "ノート"){
         this.gameStatus = "notes"
         this.msg = ["見直すノートを選んでください"]
       } else if(c === "論文") {
         this.gameStatus = "papers"
+      } else if(c === "素材"){
+        this.gameStatus = "materials"
       } else if(c === "薬棚・使い魔"){
         this.gameStatus = "rack"
       }
@@ -201,7 +215,7 @@ export default {
           name: paper.name, 
           sub: paper.sub, 
           ref: paper.ref, 
-          candidate: calc_candidate("crystal",this.get_m_from_name(paper.sub).ele), 
+          candidate2: calc_candidate("crystal",this.get_m_from_name(paper.sub).ele), 
           number: this.subjectNumber
         }
         this.notes.push(n)
@@ -213,7 +227,7 @@ export default {
           name: paper.name, 
           sub: paper.sub, 
           ref: paper.ref, 
-          contain: [this.get_m_from_name(paper.sub).ele[0],this.get_m_from_name(paper.sub).ele[1]],
+          candidate4: calc_candidate("potion",this.get_m_from_name(paper.sub).ele), 
           number: this.subjectNumber
         }
         this.notes.push(n)
@@ -225,7 +239,7 @@ export default {
           name: paper.name, 
           sub: paper.sub, 
           ref: paper.ref, 
-          contain: [converse(this.get_m_from_name(paper.sub).ele[0]),converse(this.get_m_from_name(paper.sub).ele[1])],
+          candidate4: calc_candidate("reagent",this.get_m_from_name(paper.sub).ele), 
           number: this.subjectNumber
         }
         this.notes.push(n)
@@ -267,7 +281,9 @@ export default {
       }
     },
     initGame() {
-
+      this.materials.forEach(e=>{
+        e.num_past = 0
+      })
     },
     get_m_from_name(name){
       return get_m_from_name(this.materials, name)

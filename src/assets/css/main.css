@@ -81,6 +81,10 @@ h2 {
   height: 20px;
 }
 
+.atom {
+  height: 16px;
+}
+
 .space {
   border: 2px solid;
   padding: 6px;
@@ -119,6 +123,10 @@ h2 {
   margin-right: 60px;
 }
 
+.buttons {
+  margin-left: 60px;
+}
+
 .main {
 
 }
@@ -130,7 +138,7 @@ h2 {
   margin-right: 8px;
 }
 
-.cauldron, .papers {
+.cauldron, .papers, .relative {
   position: relative;
 }
 
@@ -138,9 +146,10 @@ h2 {
   font-size: small;
 }
 
-.btn-close {
+.btn-close, .right-side {
   position: absolute;
   right: 0;
+  top: 5px;
 }
 
 .v-leave-active {
