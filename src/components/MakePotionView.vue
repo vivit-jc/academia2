@@ -32,7 +32,7 @@
         <ObjectImage :material="m"></ObjectImage>
         {{m.name}}({{ele_j(m.ele)}}) x{{m.num}}
         <button type="button" :class="{'btn-secondary':!settable(m)}" @click="click_material_command(m)">入れる</button>
-        <button type="button">ノート</button>
+        <button type="button" @click="search_notes_by_mat(m)">ノート</button>
       </div>
     </div>
     <div class="row" v-if="table==='reagents'">
@@ -97,6 +97,9 @@ export default {
     },
     open_note(note){
       this.showing = note
+    },
+    search_notes_by_mat(m){
+      this.$emit("search_notes_by_mat",m)
     },
     write_paper(note,type){
       this.$emit("write_paper",note,type)
