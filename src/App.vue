@@ -43,7 +43,7 @@
           </ShowNotes>
           <ShowRack v-if="gameStatus==='rack'" :rack="rack" :notes="notes" :materials="materials">
           </ShowRack>
-          <ShowPapers v-if="gameStatus==='papers'" :papers="papers" :materials="materials" :notes="notes"></ShowPapers>
+          <ShowPapers v-if="gameStatus==='papers'" :papers="papers" :materials="materials" :notes="notes" @write_paper="write_paper"></ShowPapers>
           <ShowMaterials v-if="gameStatus==='materials'" :materials="materials"></ShowMaterials>
           <div class="row message space">
             <p v-for="(m, key) in msg" :key="key">{{m}}</p>
@@ -197,8 +197,13 @@ export default {
       this.rack.unshift(obj)
     },
 
-    write_paper(note){
-      let paper = get_writable_paper(this.materials, this.notes, note)
+    write_paper(note,type){
+      let paper
+      if(type==="atom_direct"){
+        paper = note
+      } else {
+        paper = get_writable_paper(this.materials, this.notes, note)
+      }
       console.log(JSON.stringify(paper))
       if(paper.theme === "atom"){
         this.paperNumber += 1

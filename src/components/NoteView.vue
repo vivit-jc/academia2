@@ -96,7 +96,7 @@ export default {
       return get_writable_paper(this.materials, this.notes, note)
     },
     write_paper(){
-      this.$emit("write_paper",this.note)
+      this.$emit("write_paper",this.note,"atom")
     },
     calc_candidate4(note){
       let mat = note.candidate4
