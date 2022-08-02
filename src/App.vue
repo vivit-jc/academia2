@@ -43,7 +43,7 @@
           </ShowNotes>
           <ShowRack v-if="gameStatus==='rack'" :rack="rack" :notes="notes" :materials="materials">
           </ShowRack>
-          <ShowPapers v-if="gameStatus==='papers'" :papers="papers" :materials="materials"></ShowPapers>
+          <ShowPapers v-if="gameStatus==='papers'" :papers="papers" :materials="materials" :notes="notes"></ShowPapers>
           <ShowMaterials v-if="gameStatus==='materials'" :materials="materials"></ShowMaterials>
           <div class="row message space">
             <p v-for="(m, key) in msg" :key="key">{{m}}</p>

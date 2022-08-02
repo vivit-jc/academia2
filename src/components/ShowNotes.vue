@@ -27,7 +27,6 @@
         <img :src="atom_img(n.candidate4[1])" class="atom">) - 
         (<img :src="atom_img(n.candidate4[2])" class="atom"> or 
         <img :src="atom_img(n.candidate4[3])" class="atom">) 
-
       </span>
     </div>
   </div>

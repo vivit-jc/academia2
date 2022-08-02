@@ -12,19 +12,42 @@
    <div>論文 #{{showing.number}}</div>
   </div>
   <div class="row space">
-    <div><button @click="start_new_paper">新しく論文を書く</button></div>
+    <div>
+      <button @click="start_new_paper" v-if="!new_paper">新しく論文を書く</button>
+      <button @click="cancel_new_paper" v-if="new_paper">やめる</button>
+    </div>
     <div class="row" v-if="new_paper">
-      <div class="col-4">
+      <div class="col-6">
+        どの素材について書きますか？
         <select class="form-select" aria-label="Default select example" v-model="themeMaterial">
-          <option selected>素材を選択してください</option>
           <option v-for="m in theme_materials()" :key="m.name" :value="m.name">{{m.name}}</option>
         </select>
       </div>
-      <div class="col-4">
-        <select class="form-select" aria-label="Default select example" v-model="expectAtom">
-          <option selected>元素を選択してください</option>
-          <option v-for="a in get_atom_sets()" :key="a.s" :value="a.s">{{a.j}}</option>
-        </select>
+    </div>
+    <div class="row" v-if="new_paper">
+      <div>どの元素だと考えられますか？</div>
+      <div class="col-2" v-for="a in get_atom_sets()" :key="a.j" @click="click_atom(a)" @mouseover="onMaterial=a.j" @mouseout="onMaterial=''" :class="[{hover:onMaterial===a.j},{selected:expectAtom===a.j}]">
+        <img :src="atom_img(a.e[0])" class="atom">
+        <img :src="atom_img(a.e[1])" class="atom">
+      </div>
+    </div>
+    <div class="row" v-if="new_paper">
+      <div>根拠となる考察</div>
+      <div class="col-6" v-for="n in search_theme_notes" :key="n">
+      <span v-if="n.candidate2">
+        考察 #{{n.number}}：
+        <ObjectImage :material="get_m_from_name(n.name)"></ObjectImage>=
+        <img v-for="atom in n.candidate2[0]" :key="atom.id" :src="atom_img(atom)" class="atom"> or 
+        <img v-for="atom in n.candidate2[1]" :key="atom.id" :src="atom_img(atom)" class="atom">
+      </span>
+      <span v-else-if="n.candidate4">
+        考察 #{{n.number}}：
+        <ObjectImage :material="get_m_from_name(n.name)"></ObjectImage>=
+        (<img :src="atom_img(n.candidate4[0])" class="atom"> or 
+        <img :src="atom_img(n.candidate4[1])" class="atom">) - 
+        (<img :src="atom_img(n.candidate4[2])" class="atom"> or 
+        <img :src="atom_img(n.candidate4[3])" class="atom">) 
+      </span>
       </div>
     </div>
   </div>
@@ -44,18 +67,21 @@ export default {
       onPaper: "",
       showing: null,
       new_paper: false,
-      themeMaterial: "素材を選択してください",
-      expectAtom: "元素を選択してください"
+      onMaterial: '',
+      themeMaterial: "",
+      expectAtom: ""
 
     }
   },
   computed: {
-
+    search_theme_notes(){
+      return this.notes.filter(n=>n.ntype==="discussion")
+    }
   },
   watch: {
     themeMaterial(){
-      console.log(this.themeMaterial, this.expectAtom)
-
+    },
+    onMaterial(){
     }
   },
   mounted() {
@@ -70,10 +96,17 @@ export default {
     },
     start_new_paper(){
       this.new_paper = true
+      this.themeMaterial = "素材を選択してください"
+    },
+    cancel_new_paper(){
+
     },
     is_submitted(p) {
       if(p.submitted){return "提出済"}
       else{return "未提出"}
+    },
+    click_atom(atom){
+      this.expectAtom = atom.j
     },
     theme_materials(){
       return this.materials.filter(m=>!m.known)
