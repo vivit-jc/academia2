@@ -6,28 +6,7 @@
       <button v-for="(str,index) in toggleStr" :key="str" :class="{'btn-secondary':!toggleStatus[index]}" @click="toggle(index)">{{str}}</button>
     </div>
     <div class="col-6" v-for="(n, key) in narrow_notes" :key="key" :class="[{hover:onNote===n},{}]" @mouseover="onNote=n" @mouseout="onNote=''" @click="open_note(n)">
-      <span v-if="n.theme==='exp'">
-        実験 #{{n.number}}：
-        <ObjectImage :material="get_m_from_name(n.materials[0])"></ObjectImage>
-        +
-        <ObjectImage :material="get_m_from_name(n.materials[1])"></ObjectImage>
-        →
-        <ObjectImage :material="n"></ObjectImage>
-      </span>
-      <span v-else-if="n.candidate2">
-        考察 #{{n.number}}：
-        <ObjectImage :material="get_m_from_name(n.name)"></ObjectImage>=
-        <img v-for="atom in n.candidate2[0]" :key="atom.id" :src="atom_img(atom)" class="atom"> or 
-        <img v-for="atom in n.candidate2[1]" :key="atom.id" :src="atom_img(atom)" class="atom">
-      </span>
-      <span v-else-if="n.candidate4">
-        考察 #{{n.number}}：
-        <ObjectImage :material="get_m_from_name(n.name)"></ObjectImage>=
-        (<img :src="atom_img(n.candidate4[0])" class="atom"> or 
-        <img :src="atom_img(n.candidate4[1])" class="atom">) - 
-        (<img :src="atom_img(n.candidate4[2])" class="atom"> or 
-        <img :src="atom_img(n.candidate4[3])" class="atom">) 
-      </span>
+      <NoteSummary :materials="materials" :note="n"></NoteSummary>
     </div>
   </div>
   <NoteView v-if="showing" :showing="showing" :notes="notes" :materials="materials" @open_note="open_note" @write_paper="write_paper"></NoteView>
@@ -35,7 +14,7 @@
 
 <script>
 import NoteView from './NoteView.vue'
-import ObjectImage from './ObjectImage.vue'
+import NoteSummary from './NoteSummary.vue'
 
 import {get_m_from_name, ele_j, obj_img, obj_j, get_reagent_number, atom_str} from '../misc.js'
 
@@ -43,7 +22,7 @@ export default {
   name: 'ShowNotes',
   props: ['notes', 'materials', 'search_mat'],
   emit: ['write_paper'],
-  components: {NoteView, ObjectImage},
+  components: {NoteView, NoteSummary},
   data() {
     return {
       onNote: "",
