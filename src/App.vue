@@ -253,9 +253,12 @@ export default {
     rewrite_known(){
       let array = [].concat(this.notes,this.rack)
       array.forEach(item=>{
-        if(item.otype==="reagent" || item.otype==="duplicate"){
-          if(this.get_m_from_name(item.materials[0]).known && this.get_m_from_name(item.materials[1]).known){
-            item.known = true
+        if(item.otype==="reagent" || item.otype==="duplicate" || item.otype==="potion" || item.otype==="crystal"){
+          // 本当は材料を再帰的に全部チェックする必要がある あとで書く
+          if(item.materials.flat().length == 2){
+            if(this.get_m_from_name(item.materials[0]).known && this.get_m_from_name(item.materials[1]).known){
+              item.known = true
+            }
           }
         }
       })

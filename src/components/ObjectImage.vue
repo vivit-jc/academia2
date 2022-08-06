@@ -1,10 +1,14 @@
 <template>
   <img :src="obj_img(material)" v-if="!atom" class="material">
-  <span v-if="mat_know && !cut && check_ele">
+  <span v-if="mat_know && !cut && material.ele.length==1">
+    <img :src="atom_img(material.ele[0])" class="crystal">
+  </span>
+  <span v-else-if="mat_know && !cut && material.ele.length>1">
+    <img :src="atom_img(material.ele[2])" class="crystal" v-if="material.otype === 'potion'">
     <img :src="atom_img(material.ele[0])" class="atom">
     <img :src="atom_img(material.ele[1])" class="atom">
   </span>
-  <span v-else-if="!cut && check_ele">?</span>
+  <span v-else-if="!cut">?</span>
 </template>
 
 <script>
@@ -19,13 +23,16 @@ export default {
   },
   computed: {
     mat_know(){
+      console.log("mat_know",JSON.stringify(this.material),this.material.known)
       if(this.material.known){return true}
       else{return false}
     },
-    check_ele(){
-      if(!this.material.ele){return false}
-      else if(this.material.ele.length != 2){return false}
-      return true
+    object_type(){
+      let length = this.material.length
+      if(length == 1){return "crystal"}
+      else if(length == 2){return "reagent"}
+      else if(length == 3){return "potion"}
+      return false
     }
   },
   mounted(){
