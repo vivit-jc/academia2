@@ -54,7 +54,7 @@ export function search_notes(notes, cauldron){
 
 export function get_m_from_name(materials, name){
   if(Array.isArray(name)){
-    return "reagent"
+    return "reagent" // TODO 調合結果を検索して返す
   } else {
     return materials.find(m => m.name === name)
   }
